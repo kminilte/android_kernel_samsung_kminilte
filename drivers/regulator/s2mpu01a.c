@@ -713,6 +713,10 @@ static __devinit int s2mpu01a_pmic_probe(struct platform_device *pdev)
 	sec_reg_update(s2mpu01a->iodev, S2MPU01A_REG_LEE_NO, 0x20, 0x20);
 
 	sec_reg_update(s2mpu01a->iodev, S2MPU01A_REG_RTC_CTRL, 0x10, 0x10);
+        mdelay(50);
+	sec_reg_update(s2mpu01a->iodev, S2MPU01A_REG_RTC_CTRL, 0x00, 0x10);
+        mdelay(50);
+	sec_reg_update(s2mpu01a->iodev, S2MPU01A_REG_RTC_CTRL, 0x10, 0x10);
 
 	if (pdata->buck1_init) {
 		buck_init = s2mpu01a_convert_voltage_to_sel(&buck_voltage_val1,
