@@ -455,6 +455,7 @@ static inline int check_tx_link(struct mem_link_device *mld,
 				struct sk_buff *skb)
 {
 	struct link_device *ld = &mld->link_dev;
+	struct io_device *iod = skbpriv(skb)->iod;
 	struct modem_ctl *mc = ld->mc;
 	struct sk_buff_head *skb_txq = dev->skb_txq;
 	int ret = skb->len;
@@ -463,13 +464,11 @@ static inline int check_tx_link(struct mem_link_device *mld,
 		return -EIO;
 
 	if (unlikely(skb_txq->qlen >= MAX_SKB_TXQ_DEPTH)) {
-#ifdef DEBUG_MODEM_IF
-		struct io_device *iod = skbpriv(skb)->iod;
-		mif_debug("%s: %s->%s: ERR! %s "\
-			  "SKB_TXQ qlen %d >= limit %d\n",
-			  ld->name, iod->name, mc->name,
-			  dev->name, skb_txq->qlen, MAX_SKB_TXQ_DEPTH);
-#endif
+		mif_err("%s: %s->%s: ERR! %s SKB_TXQ qlen %d >= limit %d\n",
+			ld->name, iod->name, mc->name, dev->name, skb_txq->qlen,
+			MAX_SKB_TXQ_DEPTH);
+		if (dev->id == IPC_RAW && cp_online(mc))
+			stop_net_ifaces(ld);
 		return -EBUSY;
 	}
 
@@ -496,8 +495,10 @@ static int xmit_ipc(struct mem_link_device *mld, enum sipc_ch_id ch,
 	spin_lock_irqsave(dev->tx_lock, flags);
 
 	ret = check_tx_link(mld, dev, skb);
-	if (unlikely(ret < 0))
+	if (unlikely(ret < 0)) {
+		dev_kfree_skb_any(skb);
 		goto exit;
+	}
 
 	skb_queue_tail(dev->skb_txq, skb);
 
@@ -776,7 +777,7 @@ static void pass_skb_to_demux(struct mem_link_device *mld, struct sk_buff *skb)
 #endif
 
 	ret = iod->recv_skb_single(iod, ld, skb);
-	if (unlikely(ret < 0)) {
+	if (ret < 0) {
 		mif_err("%s: ERR! %s->recv_skb_single fail (%d)\n",
 			ld->name, iod->name, ret);
 		dev_kfree_skb_any(skb);
@@ -1360,6 +1361,8 @@ static int mem_send(struct link_device *ld, struct io_device *iod,
 
 	mif_err("%s:%s->%s: ERR! Invalid IO device (format:%s id:%d)\n",
 		ld->name, iod->name, mc->name, dev_str(id), ch);
+
+	dev_kfree_skb_any(skb);
 
 	return -ENODEV;
 }

@@ -870,7 +870,6 @@ struct cyttsp5_samsung_factory_data {
 
 	bool probe_done;
 	bool suspended;
-	bool is_inputmethod;
 };
 #endif
 
