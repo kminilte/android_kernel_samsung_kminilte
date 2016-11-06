@@ -66,7 +66,7 @@
 
 #define ABOV_BOOT_DELAY			45
 #define ABOV_RESET_DELAY		200
-#define ABOV_RESET_OFF_DELAY	20
+#define ABOV_RESET_OFF_DELAY	50
 
 struct device *sec_touchkey;
 
@@ -831,7 +831,7 @@ void abov_firm_write(const u8 *fw_data, int block, int scl, int sda)
 
 		pos += 0x20;
 
-		msleep(2);
+		msleep(4);
 	}
 }
 
@@ -901,7 +901,7 @@ static int abov_fw_update(struct abov_tk_info *info,
 				const u8 *fw_data, int block, int scl, int sda)
 {
 	abov_enter_mode(scl, sda);
-	msleep(600);
+	msleep(1125);
 	abov_firm_write(fw_data, block, scl, sda);
 	abov_checksum(info, scl, sda);
 	return 0;
