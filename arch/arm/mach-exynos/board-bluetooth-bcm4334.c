@@ -363,13 +363,26 @@ static struct platform_driver bcm4334_bluetooth_platform_driver = {
 		   },
 };
 
+static struct platform_device bcm_ldisc_device = {
+	.name = "bcm_ldisc",
+	.id = -1,
+	.dev = {
+
+	},
+};
+
 static int __init bcm4334_bluetooth_init(void)
 {
-	return platform_driver_register(&bcm4334_bluetooth_platform_driver);
+	int ret;
+
+	ret = platform_driver_register(&bcm4334_bluetooth_platform_driver);
+	platform_device_register(&bcm_ldisc_device);
+	return ret;
 }
 
 static void __exit bcm4334_bluetooth_exit(void)
 {
+	platform_device_unregister(&bcm_ldisc_device);
 	platform_driver_unregister(&bcm4334_bluetooth_platform_driver);
 }
 
