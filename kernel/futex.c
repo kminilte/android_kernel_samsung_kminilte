@@ -1259,6 +1259,7 @@ void requeue_futex(struct futex_q *q, struct futex_hash_bucket *hb1,
  * @hb:		the hash_bucket of the requeue target futex
  *
  * During futex_requeue, with requeue_pi=1, it is possible to acquire the
+,
  * target futex if it is uncontended or via a lock steal.  Set the futex_q key
  * to the requeue target futex so the waiter can detect the wakeup on the right
  * futex, but remove it from the hb and NULL the rt_waiter so it can detect
@@ -1377,6 +1378,9 @@ static int futex_requeue(u32 __user *uaddr1, unsigned int flags,
 	struct futex_hash_bucket *hb1, *hb2;
 	struct plist_head *head1;
 	struct futex_q *this, *next;
+
+	if (nr_wake < 0 || nr_requeue < 0)
+		return -EINVAL;
 
 	if (requeue_pi) {
 		/*
