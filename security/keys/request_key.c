@@ -281,7 +281,7 @@ static int construct_get_dest_keyring(struct key **_dest_keyring)
 		/* the caller supplied one */
 		key_get(dest_keyring);
 	} else {
-		bool do_prem_check = true;
+		bool do_perm_check = true;
 
 		/* use a default keyring; falling through the cases until we
 		 * find one that we actually have */
